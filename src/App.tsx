@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/indent */
 /* eslint-disable jsx-a11y/label-has-associated-control */
 /* eslint-disable jsx-a11y/control-has-associated-label */
 import React, { useEffect, useState, useRef } from 'react';
@@ -7,10 +8,12 @@ import { Todo } from './types/Todo';
 import { client } from './utils/fetchClient';
 
 export const App: React.FC = () => {
-  const [todos, setTodos] = useState <
-  (Todo & { loading?: boolean; editing?: boolean })[]
-  )
-  > ([]);
+  const [todos, setTodos] = useState<
+    (Todo & {
+      loading?: boolean;
+      editing?: boolean;
+    })[]
+  >([]);
   const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
   const [error, setError] = useState<string | null>(null);
   const [newTitle, setNewTitle] = useState('');
@@ -218,7 +221,7 @@ export const App: React.FC = () => {
                 <form
                   onSubmit={e => {
                     e.preventDefault();
-                    const value = (e.target as HTMLFormElement).title.value;
+                    const value = (e.target as HTMLFormElement).title;
 
                     handleRenameTodo(todo.id, value);
                     setTodos(prev =>
