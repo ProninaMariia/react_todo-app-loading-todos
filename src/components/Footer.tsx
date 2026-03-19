@@ -1,6 +1,7 @@
 import React from 'react';
 
 type Filter = 'all' | 'active' | 'completed';
+
 type Props = {
   activeCount: number;
   completedCount: number;
@@ -9,10 +10,25 @@ type Props = {
   handleClearCompleted: () => void;
 };
 
-const filters = [
-  { label: 'All', value: 'all', href: '#/' },
-  { label: 'Active', value: 'active', href: '#/active' },
-  { label: 'Completed', value: 'completed', href: '#/completed' },
+const filters: {
+  label: string;
+  value: Filter;
+  href: string;
+  dataCy: string;
+}[] = [
+  { label: 'All', value: 'all', href: '#/', dataCy: 'FilterLinkAll' },
+  {
+    label: 'Active',
+    value: 'active',
+    href: '#/active',
+    dataCy: 'FilterLinkActive',
+  },
+  {
+    label: 'Completed',
+    value: 'completed',
+    href: '#/completed',
+    dataCy: 'FilterLinkCompleted',
+  },
 ];
 
 export const Footer: React.FC<Props> = ({
@@ -24,15 +40,18 @@ export const Footer: React.FC<Props> = ({
 }) => {
   return (
     <footer className="todoapp__footer" data-cy="Footer">
-      <span className="todo-count">{activeCount} items left</span>
+      <span className="todo-count" data-cy="TodosCounter">
+        {activeCount} items left
+      </span>
 
-      <nav className="filter">
+      <nav className="filter" data-cy="Filter">
         {filters.map(f => (
           <a
             key={f.value}
             href={f.href}
+            data-cy={f.dataCy}
             className={`filter__link ${filter === f.value ? 'selected' : ''}`}
-            onClick={() => setFilter(filter)}
+            onClick={() => setFilter(f.value as Filter)}
           >
             {f.label}
           </a>
@@ -42,6 +61,7 @@ export const Footer: React.FC<Props> = ({
       <button
         type="button"
         className="todoapp__clear-completed"
+        data-cy="ClearCompletedButton"
         disabled={completedCount === 0}
         onClick={handleClearCompleted}
       >
