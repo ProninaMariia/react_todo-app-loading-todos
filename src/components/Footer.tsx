@@ -1,31 +1,25 @@
-import React from 'react';
-
-type Filter = 'all' | 'active' | 'completed';
+import React, { Dispatch, SetStateAction } from 'react';
+import { Filter } from '../types/common';
 
 type Props = {
   activeCount: number;
   completedCount: number;
   filter: Filter;
-  setFilter: (value: Filter) => void;
+  setFilter: Dispatch<SetStateAction<Filter>>;
   handleClearCompleted: () => void;
 };
 
-const filters: {
-  label: string;
-  value: Filter;
-  href: string;
-  dataCy: string;
-}[] = [
-  { label: 'All', value: 'all', href: '#/', dataCy: 'FilterLinkAll' },
+const filters = [
+  { label: 'All', value: Filter.All, href: '#/', dataCy: 'FilterLinkAll' },
   {
     label: 'Active',
-    value: 'active',
+    value: Filter.Active,
     href: '#/active',
     dataCy: 'FilterLinkActive',
   },
   {
     label: 'Completed',
-    value: 'completed',
+    value: Filter.Completed,
     href: '#/completed',
     dataCy: 'FilterLinkCompleted',
   },
@@ -51,7 +45,7 @@ export const Footer: React.FC<Props> = ({
             href={f.href}
             data-cy={f.dataCy}
             className={`filter__link ${filter === f.value ? 'selected' : ''}`}
-            onClick={() => setFilter(f.value as Filter)}
+            onClick={() => setFilter(f.value)}
           >
             {f.label}
           </a>

@@ -11,6 +11,7 @@ import { client } from './utils/fetchClient';
 import { Header } from './components/Header';
 import { TodoList } from './components/TodoList';
 import { Footer } from './components/Footer';
+import { Filter, ErrorMessage } from './types/common';
 
 type TodoWithState = Todo & {
   loading?: boolean;
@@ -19,28 +20,30 @@ type TodoWithState = Todo & {
 
 export const App: React.FC = () => {
   const [todos, setTodos] = useState<TodoWithState[]>([]);
-  const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
-  const [error, setError] = useState<string | null>(null);
+  const [filter, setFilter] = useState<Filter>(Filter.All);
+  const [error, setError] = useState<ErrorMessage | null>(null);
   const [newTitle, setNewTitle] = useState('');
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (!USER_ID) {
-      return;
+      return undefined;
     }
 
     setError(null);
     getTodos()
       .then(setTodos)
-      .catch(() => setError('Unable to load todos'));
+      .catch(() => setError(ErrorMessage.LoadTodos));
   }, []);
 
   useEffect(() => {
-    if (error) {
-      const timer = setTimeout(() => setError(null), 3000);
-
-      return () => clearTimeout(timer);
+    if (!error) {
+      return;
     }
+
+    const timer = setTimeout(() => setError(null), 3000);
+
+    return () => clearTimeout(timer);
   }, [error]);
 
   useEffect(() => {
@@ -53,9 +56,9 @@ export const App: React.FC = () => {
 
   const visibleTodos = todos.filter(todo => {
     switch (filter) {
-      case 'active':
+      case Filter.Active:
         return !todo.completed;
-      case 'completed':
+      case Filter.Completed:
         return todo.completed;
       default:
         return true;
@@ -65,13 +68,12 @@ export const App: React.FC = () => {
   const activeCount = todos.filter(todo => !todo.completed).length;
   const completedCount = todos.filter(todo => todo.completed).length;
 
-  // ✅ ADD TODO
   const handleAddTodo = async (event: React.FormEvent) => {
     event.preventDefault();
     const title = newTitle.trim();
 
     if (!title) {
-      setError('Title should not be empty');
+      setError(ErrorMessage.EmptyTitle);
       inputRef.current?.focus();
 
       return;
@@ -98,7 +100,7 @@ export const App: React.FC = () => {
 
       setTodos(prev => prev.map(t => (t.id === tempTodo.id ? created : t)));
     } catch {
-      setError('Unable to add a todo');
+      setError(ErrorMessage.AddTodo);
       setTodos(prev => prev.filter(t => t.id !== tempTodo.id));
       setNewTitle(title);
     } finally {
@@ -106,19 +108,17 @@ export const App: React.FC = () => {
     }
   };
 
-  // ✅ DELETE
   const handleDeleteTodo = async (todoId: number) => {
     setTodos(prev =>
       prev.map(t => (t.id === todoId ? { ...t, loading: true } : t)),
     );
-
     setError(null);
 
     try {
       await client.delete(`/todos/${todoId}`);
       setTodos(prev => prev.filter(t => t.id !== todoId));
     } catch {
-      setError('Unable to delete a todo');
+      setError(ErrorMessage.DeleteTodo);
       setTodos(prev =>
         prev.map(t => (t.id === todoId ? { ...t, loading: false } : t)),
       );
@@ -127,12 +127,10 @@ export const App: React.FC = () => {
     }
   };
 
-  // ✅ TOGGLE
   const handleToggleTodo = async (todo: Todo) => {
     setTodos(prev =>
       prev.map(t => (t.id === todo.id ? { ...t, loading: true } : t)),
     );
-
     setError(null);
 
     try {
@@ -142,14 +140,13 @@ export const App: React.FC = () => {
 
       setTodos(prev => prev.map(t => (t.id === todo.id ? updated : t)));
     } catch {
-      setError('Unable to update a todo');
+      setError(ErrorMessage.UpdateTodo);
       setTodos(prev =>
         prev.map(t => (t.id === todo.id ? { ...t, loading: false } : t)),
       );
     }
   };
 
-  // ✅ RENAME
   const handleRenameTodo = async (todoId: number, titleValue: string) => {
     const title = titleValue.trim();
 
@@ -160,7 +157,6 @@ export const App: React.FC = () => {
     setTodos(prev =>
       prev.map(t => (t.id === todoId ? { ...t, loading: true } : t)),
     );
-
     setError(null);
 
     try {
@@ -168,14 +164,12 @@ export const App: React.FC = () => {
 
       setTodos(prev => prev.map(t => (t.id === todoId ? updated : t)));
     } catch {
-      setError('Unable to update a todo');
+      setError(ErrorMessage.UpdateTodo);
       setTodos(prev =>
         prev.map(t => (t.id === todoId ? { ...t, loading: false } : t)),
       );
     }
   };
-
-  // ✅ EXTRA FUNCTIONS (review fixes)
 
   const handleToggleAll = () => {
     todos.forEach(todo => {
